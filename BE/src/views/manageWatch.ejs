@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <%- include('navbar') %>
+
+<% if(success_msg != ''){ %>
+<div id="successMessage" class="alert alert-success" role="alert" style="position: fixed; top: 80px; left: 10px; z-index: 1000;">
+    <%= success_msg %>
+</div>
+<% } %>
+
+<% if(error_msg != ''){ %>
+<div id="errorMessage" class="alert alert-danger" role="alert" style="position: fixed; top: 80px; left: 10px; z-index: 1000;">
+    <%= error_msg %>
+</div>
+<% } %>
+
+<div class="container" style="padding: 1rem; min-height: 850px;">
+    <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Watch</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="brand">Brand</label>
+                            <select id="brand" name="brand" class="form-control" required>
+                                <% categories.forEach(function(brand){ %>
+                                <option value="<%= brand._id %>"><%= brand.brandName %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Input name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">Image</label>
+                            <input type="text" class="form-control" id="image" name="image" placeholder="Input image URL" required pattern="^(http|https):\/\/.*(jpeg|jpg|png|gif|bmp)$">
+                        </div>
+                        <div class="form-group">
+                            <label for="price">Price</label>
+                            <input type="number" class="form-control" id="price" name="price" placeholder="Input price" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Input description" required></textarea>
+                        </div>
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="isAutomatic" name="isAutomatic">
+                            <label class="form-check-label" for="isAutomatic">Automatic</label>
+                        </div>
+                        <button type="submit" class="btn btn-secondary">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-secondary mb-3 mt-3" data-toggle="modal" data-target="#modal">Add New Watch</button>
+
+    <table class="table table-bordered table-responsive-sm">
+        <thead class="thead-dark">
+            <tr>
+                <th style="width: 15%;" scope="col">Name</th>
+                <th scope="col">Image</th>
+                <th scope="col">Price</th>
+                <th style="width: 30%;" scope="col">Description</th>
+                <th scope="col">Brand</th>
+                <th scope="col">Automatic</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% watches.forEach(function(watch, index){ %>
+            <tr>
+                <td><%= watch.name %></td>
+                <td style="width: 200px; height: 150px;"><img src="<%= watch.image %>" alt="<%= watch.name %>" class="img-fluid"></td>
+                <td><%= watch.price %></td>
+                <td><%= watch.description %></td>
+                <td><%= watch.brand ? watch.brand.brandName : '' %></td>
+                <td><%= watch.isAutomatic ? 'Yes' : 'No' %></td>
+                <td>
+                    <button type="button" class="btn btn-secondary" onclick="redirect('/edit/<%= watch._id %>')">
+                        <i class="fas fa-edit">Edit</i>
+                    </button>
+                      <button type="button" class="btn btn-danger" onclick="confirmAndRedirect('/delete/<%= watch._id %>')">
+                        <i class="fas fa-trash-alt">Delete</i>
+                    </button>
+                    
+                    
+                    <!-- </div> -->
+                </td>
+            </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    setTimeout(function () {
+        var successMessage = document.getElementById("successMessage");
+        if (successMessage) {
+            successMessage.style.display = "none";
+        }
+        var errorMessage = document.getElementById("errorMessage");
+        if (errorMessage) {
+            errorMessage.style.display = "none";
+        }
+    }, 3000);
+</script>
+<script>
+  function confirmAndRedirect(path) {
+      if (confirm('Confirm to delete?')) {
+          window.location.href = '<%= baseURL %>' + path;
+      }
+  }
+
+  function redirect(path) {
+      window.location.href = '<%= baseURL %>' + path;
+  }
+</script>
+</body>
+</html>

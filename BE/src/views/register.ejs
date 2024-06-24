@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body class="bg-light">
+    <!-- Include the Bootstrap Navbar from partials/header -->
+    <%- include('navbar') %>
+    <div class="text-center">
+        <h1 class=" mt-5">Welcome to DWATCHES</h1>
+    </div>
+    <div class="container d-flex justify-content-center align-items-center mt-5">
+        <div class="card p-4" style="width: 500px;">
+            <div class="card-body">
+                <% if(success_msg != ''){ %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <%= success_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <% } %>
+                <% if(error_msg != ''){ %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <% } %>
+                <form name="registrationForm" method="POST" onsubmit="return validateForm()">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-envelope"></i></span>
+                            <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
+                        </div>
+                        <div id="usernameError" class="error-message"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-user"></i></span>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
+                        </div>
+                        <div id="nameError" class="error-message"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="YOB" class="form-label">Year of Birth</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                            <input type="number" id="YOB" name="YOB" class="form-control" placeholder="Enter your year of birth" required>
+                        </div>
+                        <div id="YOBError" class="error-message"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                        </div>
+                        <div id="passwordError" class="error-message"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+                        </div>
+                        <div id="confirmPasswordError" class="error-message"></div>
+                    </div>
+                    <div class="mb-3 d-grid">
+                        <button type="submit" class="btn btn-secondary">Register</button>
+                    </div>
+                </form>
+                <div class="text-center">
+                    <p class="mb-0">Already have an account? <a href="/login">Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
+    <script>
+        function validateForm() {
+            var form = document.forms["registrationForm"];
+            var username = form["username"].value;
+            var name = form["name"].value;
+            var YOB = form["YOB"].value;
+            var password = form["password"].value;
+            var confirmPassword = form["confirmPassword"].value;
+            var isValid = true;
+
+            // Clear previous error messages
+            var errorMessages = document.getElementsByClassName("error-message");
+            while (errorMessages[0]) {
+                errorMessages[0].parentNode.removeChild(errorMessages[0]);
+            }
+
+            // Validate username
+            if (username.length <= 6) {
+                displayError(form["username"], "Username must be more than 6 characters.");
+                isValid = false;
+            }
+
+            // Validate name
+            if (name === "") {
+                displayError(form["name"], "Please enter your name.");
+                isValid = false;
+            }
+
+            // Validate year of birth
+            var currentYear = new Date().getFullYear();
+            if (YOB === "" || isNaN(YOB) || YOB < 1800 || YOB > currentYear) {
+                displayError(form["YOB"], "Please enter a valid year of birth between 1800 and " + currentYear + ".");
+                isValid = false;
+            }
+
+            // Validate password
+            if (password === "") {
+                displayError(form["password"], "Please enter your password.");
+                isValid = false;
+            } else if (password.length < 6) {
+                displayError(form["password"], "Password must be at least 6 characters long.");
+                isValid = false;
+            }
+
+            // Validate confirm password
+            if (confirmPassword === "") {
+                displayError(form["confirmPassword"], "Please confirm your password.");
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                displayError(form["confirmPassword"], "Passwords do not match.");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function displayError(inputElement, message) {
+            var errorElement = document.createElement("div");
+            errorElement.className = "error-message";
+            errorElement.innerText = message;
+            inputElement.parentNode.appendChild(errorElement);
+        }
+    </script>
+</body>
+
+</html>
