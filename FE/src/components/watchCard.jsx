@@ -4,24 +4,50 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import { CardActionArea } from '@mui/material';
+import { Link } from 'react-router-dom';
 
-export default function WatchCard() {
+export default function WatchCard({ watch }) {
   return (
-    <Card sx={{ maxWidth: 345 }}>
-      <CardActionArea>
+    <Card
+      sx={{
+        maxWidth: 345,
+        margin: 'auto',
+        mb: 5,
+        '&:hover': {
+          '.MuiTypography-root': {
+            color: 'gray',
+          },
+        },
+      }}
+    >
+      <CardActionArea component={Link} to={`/watchDetail/${watch._id}`}>
         <CardMedia
           component="img"
           height="140"
-          image="/static/images/cards/contemplative-reptile.jpg"
-          alt="green iguana"
+          image={watch.image}
+          alt="image"
+          className='mt-4 mb-4'
         />
-        <CardContent>
-          <Typography gutterBottom variant="h5" component="div">
-            Lizard
+        <CardContent className='text-center'>
+          <Typography
+            gutterBottom
+            sx={{ height: '40px' }}
+            variant="h5"
+            component="div"
+            className='fw-bold'
+          >
+            {watch.name}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Lizards are a widespread group of squamate reptiles, with over 6,000
-            species, ranging across all continents except Antarctica
+          <Typography>
+            {watch.brand?.brandName}
+          </Typography>
+          <Typography
+            gutterBottom
+            variant="h6"
+            component="div"
+            sx={{ marginTop: '20px' }}
+          >
+            ${watch.price}
           </Typography>
         </CardContent>
       </CardActionArea>
