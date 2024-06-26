@@ -6,7 +6,7 @@ const userController = require('../controllers/userController');
 const watchController = require('../controllers/watchController');
 
 userRouter
-.route('/')
+.route('/getAllWatch')
 .get(watchController.getAllWatch)
 
 userRouter

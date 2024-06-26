@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const session = require('express-session');
 const flash = require('connect-flash');
+const cors = require('cors');
 
 const userRouter = require('./routes/userRouter');
 const brandRouter = require('./routes/brandRouter');
@@ -49,6 +50,8 @@ app.use(function(req, res, next) {
   res.locals.errorPassword = req.flash('errorPassword');
   next();
 });
+
+app.use(cors());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

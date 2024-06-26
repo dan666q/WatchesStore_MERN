@@ -3,34 +3,35 @@ const bcrypt = require('bcrypt');
 const passport = require('passport');
 
 class userController {
-
     formLogin(req, res, next) {
-        res.render('login', {
+        res.json({
+            message: 'Render login form',
             errors: []
         });
     }
 
     login(req, res, next) {
         passport.authenticate('local', (err, user, info) => {
-            console.log(info)
-            if (err) throw err;
-            if (!user) {
-                res.render('login', {
-                    error: [info.message]
-                });
-            } else {
-                req.logIn(user, (err) => {
-                    if (err) throw err;
-                    req.session.loggedIn = true;
-                    req.flash('success_msg', 'Login success');
-                    res.redirect('/');
-                })
+            if (err) {
+                return res.status(500).json({ message: 'Server error', error: err });
             }
+            if (!user) {
+                return res.status(400).json({ message: info.message });
+            } 
+            req.logIn(user, (err) => {
+                if (err) {
+                    return res.status(500).json({ message: 'Server error', error: err });
+                }
+                req.session.loggedIn = true;
+                res.status(200).json({ user });
+            });
         })(req, res, next);
     }
 
     formRegister(req, res, next) {
-        res.render('register');
+        res.json({
+            message: 'Render register form'
+        });
     }
 
     createNewAccount(req, res, next) {
@@ -51,37 +52,36 @@ class userController {
             }
     
             if (errorMessages.length > 0) {
-                req.flash('error_msg', errorMessages);
-                return res.redirect('/register');
+                return res.status(400).json({ message: 'Validation error', errors: errorMessages });
             } else {
                 const newAccount = new Accounts({ username, password, name, YOB });
                 bcrypt.hash(newAccount.password, 10, (err, hash) => {
-                    if (err) throw err;
+                    if (err) {
+                        return res.status(500).json({ message: 'Server error', error: err });
+                    }
                     newAccount.password = hash;
                     newAccount.save().then(() => {
-                        req.flash('success_msg', 'Register success');
-                        res.redirect('/login');
-                    }).catch(err => console.log(err));
+                        res.status(201).json({ message: 'Register successful' });
+                    }).catch(err => {
+                        console.log(err);
+                        res.status(500).json({ message: 'Server error', error: err });
+                    });
                 });
             }
         }).catch(err => {
-            // Xử lý lỗi
             console.error(err);
-            req.flash('error_msg', 'An error occurred');
-            res.redirect('/register');
+            res.status(500).json({ message: 'Server error', error: err });
         });
     }
-    
     
     logout(req, res, next) {
         req.session.passport.user = null;
         req.session.loggedIn = false;
-        req.flash('error_msg', 'Logout success');
-        res.redirect('/');
+        res.status(200).json({ message: 'Logout successful' });
     }
 
     profile(req, res, next) {
-        res.render('profile', {
+        res.status(200).json({
             title: 'Profile',
             user: req.user,
             baseUrl: req.originalUrl
@@ -93,20 +93,18 @@ class userController {
         let errors = [];
 
         if (!name || !username || !YOB) {
-            errors.push({ msg: 'Please enter all fields' });
+            errors.push('Please enter all fields');
         }
 
         if (errors.length > 0) {
-            res.render('profile', { errors });
+            return res.status(400).json({ message: 'Validation error', errors });
         } else {
-            //Keep same information
             Accounts.findById(req.user._id).then((account) => {
                 if (account.name === name && account.username === username && account.YOB == YOB) {
-                    res.redirect('/profile');
-                }else{
+                    return res.status(200).json({ message: 'No changes detected' });
+                } else {
                     Accounts.updateOne({ _id: req.user._id }, req.body).then(() => {
-                        req.flash('success_msg', 'Update profile success');
-                        res.redirect('/profile');
+                        res.status(200).json({ message: 'Update profile successful' });
                     }).catch(next);
                 }
             }).catch(next);
@@ -118,41 +116,41 @@ class userController {
         const { oldPassword, newPassword, confirmNewPassword } = req.body;
 
         if (!oldPassword || !newPassword || !confirmNewPassword) {
-            errors.push({ msg: 'Please enter all fields' });
+            errors.push('Please enter all fields');
         }
 
         if (newPassword.length < 6) {
-            errors.push({ msg: 'Password must be at least 6 characters' });
+            errors.push('Password must be at least 6 characters');
         }
 
         if (newPassword != confirmNewPassword) {
-            errors.push({ msg: 'Password confirmation does not match password' });
+            errors.push('Password confirmation does not match password');
         }
 
         if (errors.length > 0) {
-            req.flash('errorPassword', errors);
-            res.redirect('/profile');
+            return res.status(400).json({ message: 'Validation error', errors });
         } else {
             Accounts.findById(req.user._id).then((account) => {
                 bcrypt.compare(oldPassword, account.password, (err, isMatch) => {
-                    if (err) throw err;
+                    if (err) {
+                        return res.status(500).json({ message: 'Server error', error: err });
+                    }
                     if (isMatch) {
                         bcrypt.hash(newPassword, 10, (err, hash) => {
-                            if (err) throw err;
+                            if (err) {
+                                return res.status(500).json({ message: 'Server error', error: err });
+                            }
                             Accounts.updateOne({ _id: req.user._id }, { password: hash }).then(() => {
-                                req.flash('successPassword_msg', 'Change password success');
-                                res.redirect('/profile');
+                                res.status(200).json({ message: 'Change password successful' });
                             }).catch(next);
                         });
                     } else {
-                        req.flash('errorPassword_msg', 'Password incorrect');
-                        res.redirect('/profile');
+                        res.status(400).json({ message: 'Password incorrect' });
                     }
                 });
             }).catch(next);
         }
     }
-
 }
 
 module.exports = new userController;

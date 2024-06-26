@@ -5,5 +5,5 @@ const brandSchema = new Schema({
      brandName: String
 },{ timestamps: true, });
 
-const brands = mongoose.model("Categories", brandSchema);
+const brands = mongoose.model("Brands", brandSchema);
 module.exports = brands;

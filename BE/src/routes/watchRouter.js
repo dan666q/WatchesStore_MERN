@@ -15,7 +15,7 @@ watchRouter
 .get(isAdmin, watchController.deleteWatch)
 
 watchRouter
-.route('/:id')
+.route('/getWatchById/:id')
 .get(watchController.getWatchById)
 watchRouter
 .route('/:id/comment')

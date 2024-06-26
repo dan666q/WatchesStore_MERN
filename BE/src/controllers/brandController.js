@@ -1,106 +1,96 @@
 const brands = require('../models/brand');
 const watches = require('../models/watch');
 
-class brandController {
+class BrandController {
 
-    getAllBrand(req, res, next) {
-        brands.find({}).then(categories => {
-            res.render('brand', {
-                title: 'List of Brands',
-                categories: categories,
-                baseURL: req.originalUrl
-            });
-        }).catch(next);
+    // GET all brands
+    async getAllBrands(req, res, next) {
+        try {
+            const categories = await brands.find({});
+            res.json(categories);
+        } catch (error) {
+            next(error);
+        }
     }
 
-    createNewBrand(req, res, next) {
+    // POST create new brand
+    async createNewBrand(req, res, next) {
         const { brandName } = req.body;
-        brands.findOne({ brandName: brandName })
-            .then(existingBrand => {
-                if (existingBrand) {
-                    req.flash('error_msg', 'Brand already exists');
-                    return res.redirect('/brands');
-                } else {
-                    const newBrand = new brands({ brandName });
-                    newBrand.save()
-                        .then(() => {
-                            req.flash('success_msg', 'Brand created successfully');
-                            res.redirect('/brands');
-                        })
-                        .catch(next);
-                }
-            })
-            .catch(next);
+        try {
+            const existingBrand = await brands.findOne({ brandName: brandName });
+            if (existingBrand) {
+                return res.status(400).json({ error_msg: 'Brand already exists' });
+            }
+            const newBrand = new brands({ brandName });
+            await newBrand.save();
+            res.status(201).json({ success_msg: 'Brand created successfully' });
+        } catch (error) {
+            next(error);
+        }
     }
     
-    deleteBrand(req, res, next) {
+    // DELETE brand by ID
+    async deleteBrand(req, res, next) {
         const { id } = req.params;
-    
-        watches.findOne({ brand: id })
-            .then(watch => {
-                if (watch) {
-                    req.flash('error_msg', 'Brand cannot be deleted as it is associated with one or more watches');
-                    return res.redirect('/brands');
-                } else {
-                    brands.findByIdAndDelete(id)
-                        .then(() => {
-                            req.flash('success_msg', 'Brand deleted successfully');
-                            res.redirect('/brands');
-                        }).catch(next);
-                }
-            }).catch(next);
-    }
-    
-
-    getBrandById(req, res, next) {
-        const { id } = req.params;
-        brands.findById(id)
-            .then(brand => {
-                res.render('brandEdit', {
-                    brand: brand
-                })
-            }).catch(next);
+        try {
+            const watch = await watches.findOne({ brand: id });
+            if (watch) {
+                return res.status(400).json({ error_msg: 'Brand cannot be deleted as it is associated with one or more watches' });
+            }
+            await brands.findByIdAndDelete(id);
+            res.json({ success_msg: 'Brand deleted successfully' });
+        } catch (error) {
+            next(error);
+        }
     }
 
-    getBrandEditById(req, res, next) {
+    // GET brand by ID
+    async getBrandById(req, res, next) {
         const { id } = req.params;
-        brands.findById(id)
-            .then(brand => {
-                res.render('brandEdit', {
-                    title: brand.brandName,
-                    brand: brand
-                })
-            }).catch(next);
+        try {
+            const brand = await brands.findById(id);
+            if (!brand) {
+                return res.status(404).json({ error_msg: 'Brand not found' });
+            }
+            res.json(brand);
+        } catch (error) {
+            next(error);
+        }
     }
 
-    updateBrandById(req, res, next) {
+    // GET brand edit by ID (optional)
+    async getBrandEditById(req, res, next) {
+        const { id } = req.params;
+        try {
+            const brand = await brands.findById(id);
+            if (!brand) {
+                return res.status(404).json({ error_msg: 'Brand not found' });
+            }
+            res.json(brand);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // PUT update brand by ID
+    async updateBrandById(req, res, next) {
         const { brandName } = req.body;
-        brands.findOne({ _id: req.params.id }) 
-            .then(existingBrand => {
-                if (!existingBrand) {   
-                    req.flash('error_msg', 'Brand not found');
-                    return res.redirect('/brands');
-                }     
-                brands.findOne({ brandName: brandName, _id: { $ne: req.params.id } })
-                    .then(duplicateBrand => {
-                        if (duplicateBrand) {                        
-                            req.flash('error_msg', 'Brand name already exists');
-                            return res.redirect('/brands');
-                        } else {                       
-                            brands.updateOne({ _id: req.params.id }, req.body)
-                                .then(() => {
-                                    req.flash('success_msg', 'Brand updated successfully');
-                                    res.redirect('/brands');
-                                })
-                                .catch(next);
-                        }
-                    })
-                    .catch(next);
-            })
-            .catch(next);
+        const { id } = req.params;
+        try {
+            const existingBrand = await brands.findById(id);
+            if (!existingBrand) {
+                return res.status(404).json({ error_msg: 'Brand not found' });
+            }
+            const duplicateBrand = await brands.findOne({ brandName: brandName, _id: { $ne: id } });
+            if (duplicateBrand) {
+                return res.status(400).json({ error_msg: 'Brand name already exists' });
+            }
+            await brands.findByIdAndUpdate(id, req.body);
+            res.json({ success_msg: 'Brand updated successfully' });
+        } catch (error) {
+            next(error);
+        }
     }
-    
-
 }
 
-module.exports = new brandController();
+module.exports = new BrandController();

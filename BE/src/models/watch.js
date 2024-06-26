@@ -43,7 +43,7 @@ const watchSchema = new Schema({
     comments: [commentSchema],
     brand: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Categories",
+        ref: "Brands",
         require: true
     },
 },{ timestamps: true, });

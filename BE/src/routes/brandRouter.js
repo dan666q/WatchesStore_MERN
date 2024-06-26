@@ -5,8 +5,8 @@ const { isAdmin } = require('../config/auth');
 const brandController = require('../controllers/brandController');
 
 categoryBrand
-.route('/')
-.get(isAdmin, brandController.getAllBrand)
+.route('/getAllBrands')
+.get(isAdmin, brandController.getAllBrands)
 .post(isAdmin, brandController.createNewBrand)
 
 categoryBrand
