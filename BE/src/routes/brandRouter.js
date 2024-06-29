@@ -1,25 +1,26 @@
 const express = require('express');
 const categoryBrand = express.Router();
-const { isAdmin } = require('../config/auth');
-
+const { ensureAuthenticated, isAdmin } = require('../config/auth');
 const brandController = require('../controllers/brandController');
 
-categoryBrand
-.route('/getAllBrands')
-.get(isAdmin, brandController.getAllBrands)
-.post(isAdmin, brandController.createNewBrand)
+// Middleware for all routes in this router
+categoryBrand.use(ensureAuthenticated);
 
-categoryBrand
-.route('/delete/:id')
-.get(isAdmin, brandController.deleteBrand)
+// Routes with isAdmin middleware for authorization
+categoryBrand.route('/getAllBrands')
+  .get(isAdmin, brandController.getAllBrands)
+  .post(isAdmin, brandController.createNewBrand);
+categoryBrand.route('/createNewBrand')
+  .post(isAdmin, brandController.createNewBrand);
 
-categoryBrand
-.route('/:id')
-.get(isAdmin, brandController.getBrandById)
+categoryBrand.route('/delete/:id')
+  .delete(isAdmin, brandController.deleteBrand);
 
-categoryBrand
-.route('/edit/:id')
-.get(isAdmin, brandController.getBrandEditById)
-.post(isAdmin, brandController.updateBrandById)
+categoryBrand.route('/:id')
+  .get(isAdmin, brandController.getBrandById);
+
+categoryBrand.route('/edit/:id')
+  .get(isAdmin, brandController.getBrandEditById)
+  .put(isAdmin, brandController.updateBrandById);
 
 module.exports = categoryBrand;

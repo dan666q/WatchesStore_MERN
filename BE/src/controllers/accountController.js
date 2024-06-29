@@ -2,15 +2,14 @@ const users = require('../models/user');
 
 class accountController {
 
-    getAllAccount(req, res, next) {
-        users.find({}).then((user) => {
-            res.render('account', {
-                title: 'List of Users',
-                users: user,
-                baseURL: req.originalUrl
-            });
-        }).catch(next);
-    }
+    async getAllAccount(req, res, next) {
+        try {
+          const user = await users.find({});
+          res.json(user);  // Ensure the response is in JSON format
+        } catch (err) {
+          next(err);
+        }
+      }
 }
 
 module.exports = new accountController();

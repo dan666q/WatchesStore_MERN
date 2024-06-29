@@ -6,30 +6,30 @@ const userController = require('../controllers/userController');
 const watchController = require('../controllers/watchController');
 
 userRouter
-.route('/getAllWatch')
-.get(watchController.getAllWatch)
+  .route('/getAllWatch')
+  .get(watchController.getAllWatch);
 
 userRouter
-.route('/profile')
-.get(ensureAuthenticated,userController.profile)
-.post(ensureAuthenticated,userController.updateProfile)
+  .route('/profile')
+  .get(ensureAuthenticated, userController.profile)
+  .post(ensureAuthenticated, userController.updateProfile);
 
 userRouter
-.route('/profile/change-password')
-.post(ensureAuthenticated,userController.changePassword)
+  .route('/profile/change-password')
+  .post(ensureAuthenticated, userController.changePassword);
 
 userRouter
-.route('/login')
-.get(userController.formLogin)
-.post(userController.login)
+  .route('/login')
+  .get(userController.formLogin)
+  .post(userController.login);
 
 userRouter
-.route('/register')
-.get(userController.formRegister)
-.post(userController.createNewAccount)
+  .route('/register')
+  .get(userController.formRegister)
+  .post(userController.createNewAccount);
 
 userRouter
-.route('/logout')
-.get(userController.logout)
+  .route('/logout')
+  .get(userController.logout);
 
 module.exports = userRouter;

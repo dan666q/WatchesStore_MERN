@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,7 +13,6 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { UserContext } from '../context/userContext';
 
 const theme = createTheme({
   components: {
@@ -39,10 +38,13 @@ const theme = createTheme({
 });
 
 function Navigation() {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const { user, setUser } = useContext(UserContext); // Use the context
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const [anchorElUser, setAnchorElUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const token = localStorage.getItem('token');
+  const name = localStorage.getItem('user'); // Retrieve username from localStorage
+  const isAdmin = localStorage.getItem('isAdmin') === 'true'; // Retrieve isAdmin status
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -62,12 +64,15 @@ function Navigation() {
 
   const handleLogout = () => {
     localStorage.removeItem('token'); // Remove token from localStorage
-    setUser(null); // Clear user context
+    localStorage.removeItem('isAdmin'); // Remove isAdmin status from localStorage
     navigate('/login'); // Redirect to login page
   };
 
-  const pages = user?.isAdmin ? ['Home', 'Watch', 'Brand', 'Account'] : ['Home'];
-  const settings = user ? ['Profile', 'Account', 'Dashboard', 'Logout'] : [];
+  // Define pages and settings based on isAdmin status
+  const pages = isAdmin ? [ 'Watch', 'Brand', 'Account'] : ['Home'];
+  const settings = isAdmin
+    ? ['Profile',  'Logout']
+    : ['Profile', 'Logout'];
 
   return (
     <ThemeProvider theme={theme}>
@@ -78,7 +83,7 @@ function Navigation() {
               variant="h6"
               noWrap
               component={Link}
-              to="/"  // Updated to "/" for home link
+              to="/"
               sx={{
                 mr: 2,
                 display: { xs: 'none', md: 'flex' },
@@ -169,11 +174,11 @@ function Navigation() {
             </Box>
 
             <Box sx={{ flexGrow: 0 }}>
-              {user ? (
+              {token ? (
                 <>
                   <Tooltip title="Open settings">
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                      <Avatar alt={user.name} src="/static/images/avatar/2.jpg" />
+                      <Avatar alt={name} src="/static/images/avatar/2.jpg" />
                     </IconButton>
                   </Tooltip>
                   <Menu
@@ -192,6 +197,11 @@ function Navigation() {
                     open={Boolean(anchorElUser)}
                     onClose={handleCloseUserMenu}
                   >
+                    <MenuItem disabled>
+                      <Typography variant="body2" sx={{ color: 'black', textAlign: 'center' }}>
+                        Welcome, {name}
+                      </Typography>
+                    </MenuItem>
                     {settings.map((setting) => (
                       <MenuItem
                         key={setting}

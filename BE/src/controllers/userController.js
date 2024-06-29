@@ -1,6 +1,7 @@
 const Accounts = require('../models/user');
 const bcrypt = require('bcrypt');
-const passport = require('passport');
+const jwt = require('jsonwebtoken');
+const config = require('../config/auth');
 
 class userController {
     formLogin(req, res, next) {
@@ -11,21 +12,27 @@ class userController {
     }
 
     login(req, res, next) {
-        passport.authenticate('local', (err, user, info) => {
-            if (err) {
-                return res.status(500).json({ message: 'Server error', error: err });
+        const { username, password } = req.body;
+        Accounts.findOne({ username }).then(account => {
+            if (!account) {
+                return res.status(400).json({ message: 'Incorrect Username' });
             }
-            if (!user) {
-                return res.status(400).json({ message: info.message });
-            } 
-            req.logIn(user, (err) => {
+            bcrypt.compare(password, account.password, (err, isMatch) => {
                 if (err) {
                     return res.status(500).json({ message: 'Server error', error: err });
                 }
-                req.session.loggedIn = true;
-                res.status(200).json({ user });
+                if (isMatch) {
+                    const payload = { id: account._id, username: account.username };
+                    const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '1h' });
+                    res.status(200).json({ token, user: account });
+                } else {
+                    return res.status(400).json({ message: 'Incorrect Password' });
+                }
             });
-        })(req, res, next);
+        }).catch(err => {
+            console.error(err);
+            res.status(500).json({ message: 'Server error', error: err });
+        });
     }
 
     formRegister(req, res, next) {
@@ -46,7 +53,7 @@ class userController {
             errorMessages.push('Password must be at least 6 characters');
         }
     
-        Accounts.findOne({ username: username }).then(account => {
+        Accounts.findOne({ username }).then(account => {
             if (account) {
                 errorMessages.push('Username already exists');
             }
@@ -75,8 +82,6 @@ class userController {
     }
     
     logout(req, res, next) {
-        req.session.passport.user = null;
-        req.session.loggedIn = false;
         res.status(200).json({ message: 'Logout successful' });
     }
 

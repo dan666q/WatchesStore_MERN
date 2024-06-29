@@ -21,8 +21,12 @@ export default function Login() {
       });
 
       if (response.status === 200) {
+        console.log(response);
         const data = response.data;
         localStorage.setItem('token', data.token); // Store token in localStorage
+        localStorage.setItem('user', data.user.name); // Store user in localStorage
+        localStorage.setItem('isAdmin', data.user.isAdmin); // Store isAdmin in localStorage
+        console.log(response)
         setUser(data.user); // Update user context after successful login
         setSnackbarOpen(true); // Show Snackbar for successful login
         navigate('/home'); // Navigate to home page

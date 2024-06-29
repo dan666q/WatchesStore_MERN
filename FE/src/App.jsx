@@ -1,29 +1,53 @@
 import './App.css';
-import { Routes, Route } from 'react-router-dom';
-import Home from './pages/home'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import Home from './pages/home';
 import Navigation from './components/navbar';
-import WatchDetail from './pages/watchDetail'
+import WatchDetail from './pages/watchDetail';
 import Login from './pages/login';
 import Register from './pages/register';
 import Brands from './pages/brands';
-
+import Profile from './pages/profile';
+import WatchManager from './pages/watchManager';
+import Account from './pages/account';
 
 function App() {
-  
+  const [isAdmin, setIsAdmin] = useState(false); // State to track admin status
+
+  useEffect(() => {
+    // Fetch isAdmin status from localStorage or backend upon login
+    const storedIsAdmin = localStorage.getItem('isAdmin');
+    if (storedIsAdmin) {
+      setIsAdmin(JSON.parse(storedIsAdmin));
+    }
+  }, []);
+
   return (
     <div className="App">
-     <Navigation></Navigation>
-     <div className='container'>
+      <Navigation />
+      <div className='container'>
         <Routes>
-          <Route path='/' element={<Home />}> </Route>
-          <Route path='/home' element={<Home />}> </Route>
-          <Route path='/watchDetail/:id' element={<WatchDetail />}> </Route>
-          <Route path='/login' element={<Login />}> </Route>
-          <Route path='/register' element={<Register />}> </Route>
-          <Route path='/brand' element={<Brands />}> </Route>
-
+          <Route path='/' element={<Home />} />
+          <Route path='/home' element={<Home />} />
+          <Route path='/watchDetail/:id' element={<WatchDetail />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
+          {isAdmin ? (
+            <>
+              <Route path='/watch' element={<WatchManager />} />
+              <Route path='/brand' element={<Brands />} />
+              <Route path='/account' element={<Account />} />
+            </>
+          ) : (
+            <>
+              <Route path='/watch' element={<Navigate to="/"/>} />
+              <Route path='/brand' element={<Navigate to="/"/>} />
+              <Route path='/account' element={<Navigate to="/"/>} />
+            </>
+          )}
+          <Route path='/profile' element={<Profile />} />
         </Routes>
-        </div>
+      </div>
     </div>
   );
 }

@@ -7,7 +7,7 @@ class watchController {
         if (req.query.search) {
             watches.find({ name: { $regex: req.query.search, $options: 'i' } })
                 .then((watch) => {
-                    res.json({ title: 'Watch', watches: watch });
+                    res.json({ title: 'Watch', watches: {watch, brandName: getBrandById(watch.brand).brandName} });
                 })
                 .catch(next);
         } else {
@@ -81,32 +81,38 @@ class watchController {
     addComment(req, res, next) {
         const watchId = req.params.id;
         const { rating, comment } = req.body;
-        const userId = req.user.id; 
-
+        const userId = req.user.id; // Assuming user ID is available in req.user
+    
         watches.findById(watchId)
             .then(watch => {
                 if (!watch) {
                     return res.status(404).json({ error: 'Watch not found' });
                 }
-                if (watch.comments.length > 0) {
-                    return res.status(400).json({ error_msg: 'Just 1 comment on a watch' });
+    
+                // Check if the user has already commented on this watch
+                const userComment = watch.comments.find(c => c.author.toString() === userId);
+    
+                if (userComment) {
+                    return res.status(400).json({ error_msg: 'You have already commented on this watch' });
                 }
+    
+                // Add the new comment
                 const newComment = {
                     rating,
                     comment,
                     author: userId
                 };
-
+    
                 watch.comments.push(newComment);
-
+    
                 return watch.save();
             })
-            .then((watch) => {
+            .then(watch => {
                 res.json({ success_msg: 'Comment added successfully', watch: watch });
             })
             .catch(next);
     }
-
+    
     getWatchEditById(req, res, next) {
         let categories = [];
         brand.find({})

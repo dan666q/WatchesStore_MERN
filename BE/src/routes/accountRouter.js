@@ -1,11 +1,11 @@
 const express = require('express');
 const accountRouter = express.Router();
-const { isAdmin } = require('../config/auth');
+const { isAdmin, ensureAuthenticated } = require('../config/auth');
 
 const accountController = require('../controllers/accountController');
 
 accountRouter
-.route('/')
-.get(isAdmin, accountController.getAllAccount)
+.route('/getAllAccount')
+.get(ensureAuthenticated, isAdmin, accountController.getAllAccount)
 
 module.exports = accountRouter

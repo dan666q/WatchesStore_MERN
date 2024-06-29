@@ -39,7 +39,7 @@ export default function WatchCard({ watch }) {
             {watch.name}
           </Typography>
           <Typography>
-            {watch.brand?.brandName}
+            {watch.brandName}
           </Typography>
           <Typography
             gutterBottom
